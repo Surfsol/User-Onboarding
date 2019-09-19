@@ -1,6 +1,7 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { withFormik, Form, Field } from "formik";
 import * as Yup from "yup"; 
+import axios from 'axios'
 
 
 function LoginForm({ values, errors, touched, status }) { //props passed down from withFormik componenet
@@ -8,15 +9,21 @@ function LoginForm({ values, errors, touched, status }) { //props passed down fr
     // errors - for Yup
     const [people, setPeople] = useState([])
     useEffect (() => {
+        if(status){
+            setPeople([...people, status]);
+        }
+    }, [status]);
+
       return (
-        <Form> //wrapper, takes care of handlesubmit, import Form
+        <div>  
+        <Form> 
             <div>
                 <Field type="name" name="name" placeholder="name"/>
+                {touched.name && errors.name && <p>errors.name</p>}
             </div>
 
             <div>
-                {touched.email && errors.email && <p>{errors.email}</p>}  // conditional statement
-                //if touched and error, write errors.email
+                {touched.email && errors.email && <p>{errors.email}</p>}  
                 <Field type="email" name="email" placeholder="Email" />
             </div>
 
@@ -32,9 +39,18 @@ function LoginForm({ values, errors, touched, status }) { //props passed down fr
             
             <button>Submit!</button>
         </Form>
+        {people.map(e => (
+            <ul key={e.id}>
+                <li>e.name</li>
+                <li>e.email</li>
+                <li>e.password</li>
+            </ul>
+        ))}
+        </div>
       )
     }
-    
+
+  
     const FormikLoginForm = withFormik({
       mapPropsToValues({ name, email, password, tos }) {  //goes with Field name = , from above
         return {
@@ -58,18 +74,18 @@ function LoginForm({ values, errors, touched, status }) { //props passed down fr
           .required("Password is required")
       }),
     
-      handleSubmit(values, {}) {
+        handleSubmit(values, { setStatus }) {
         console.log(values);
         //THIS IS WHERE YOU DO YOUR FORM SUBMISSION CODE... HTTP REQUESTS, ETC.
-    axios
-        .post ("https://reqres.in/api/users/"), values
-        .then(res => {
-            setStatus(res.data);
-        
-        });
-        .catch(err => console.log(err.res));
+        axios
+            .post ("https://reqres.in/api/users/", values)
+            .then(res => {
+                setStatus(res.data);
+
+            })
+            .catch(err => console.log(err.res));
       }
+        
     })(LoginForm);
-    
     export default FormikLoginForm;
     
